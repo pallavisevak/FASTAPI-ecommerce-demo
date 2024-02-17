@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <style>
+        body {
+            background-color: cyan;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input,
+        textarea,
+        button {
+            margin-bottom: 16px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #responseMessage {
+            text-align: center;
+            color: #d9534f;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add Product</h2>
+        <form id="addProductForm">
+            <label for="productName">Product Name:</label>
+            <input type="text" id="productName" name="productName" required>
+
+            <label for="productDescription">Product Description:</label>
+            <textarea id="productDescription" name="productDescription" required></textarea>
+
+            <label for="productPrice">Product Price:</label>
+            <input type="number" id="productPrice" name="productPrice" step="0.01" required>
+
+            <label for="productQuantity">Product Quantity:</label>
+            <input type="number" id="productQuantity" name="productQuantity" required>
+
+            <button type="button" onclick="addProduct()">Add Product</button>
+        </form>
+        <p id="responseMessage"></p>
+    </div>
+<script>
+    async function addProduct() {
+        const productName = document.getElementById("productName").value;
+        const productDescription = document.getElementById("productDescription").value;
+        const productPrice = parseFloat(document.getElementById("productPrice").value);
+        const productQuantity = parseInt(document.getElementById("productQuantity").value);
+
+        if (!productName || !productDescription || isNaN(productPrice) || isNaN(productQuantity)) {
+            document.getElementById("responseMessage").textContent = "Please fill in all fields with valid data";
+            return;
+        } else {
+            document.getElementById("responseMessage").textContent = "";
+        }
+
+        const productData = {
+            name: productName,
+            description: productDescription,
+            price: productPrice,
+            quantity: productQuantity
+        };
+        try {
+            const response = await fetch('/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(productData),
+            });
+            if (response.ok) {
+                document.getElementById("responseMessage").textContent = "Product added successfully.";
+                window.location.href = "/";
+            } else {
+                document.getElementById("responseMessage").textContent = "Failed to add product. Please try again.";
+            }
+        } catch (error) {
+            console.error('Error adding product:', error);
+            document.getElementById("responseMessage").textContent = "Error adding product. Please try again.";
+        }
+    }
+    </script>
+</body>
+</html>

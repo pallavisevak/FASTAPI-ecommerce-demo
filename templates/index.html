@@ -1,0 +1,375 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: cyan;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        nav a:hover {
+            background-color: #ddd;
+        }
+        .main-content {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .search-field {
+            padding: 8px;
+            width: 60%;
+            max-width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .search-button {
+            padding: 8px 15px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #productList {
+    list-style-type: none;
+    padding: 0;
+}
+
+productItem {
+    border: 1px solid #ddd;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+productButton {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 8px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+productButton:hover {
+    background-color: #45a049;
+}
+cartLogo {
+            width: 30px;
+            height: 30px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>E-Commerce Store</h1>
+    </header>
+
+    <div class="container">
+        <nav>
+            <a href="/">Home</a>
+            <a href="/registeryou">Register</a>
+            <a href="/loginview">Login</a>
+            <a href="/addproduct">Add Your Products</a>
+           <a href="/userprofile">Profile</a>
+            <button id="cartLogo" onclick="redirectToCartView()">🛒</button>
+
+        </nav>
+
+        <div class="main-content">
+            <h2>Welcome to our E-Commerce Store!</h2>
+            <p>Discover a wide range of products and enjoy the best shopping experience.</p>
+            <div class="container">
+                <h2>Our Products</h2>
+                <div class="search-container">
+                    <input type="text" class="search-field" id="searchInput" placeholder="Search products...">
+                    <button class="search-button" onclick="searchProducts()">Search</button>
+                </div>
+                <ul id="productList"></ul>
+            </div>
+            </div>
+
+     <script>
+     function redirectToCartView() {
+            window.location.href = '/cartview';
+        }
+    async function searchProducts() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const productList = document.getElementById('productList');
+
+        try {
+            const response = await fetch(`/products/search/?search=${encodeURIComponent(searchInput)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const products = await response.json();
+                productList.innerHTML = '';
+                products.forEach(product => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('productItem');
+                    listItem.innerHTML = `
+                        <span><strong>Name:</strong> ${product.name}</span>
+                        <span><strong>Description:</strong> ${product.description}</span>
+                        <span><strong>Price:</strong> ${product.price}</span>
+                        <span><strong>Quantity:</strong> ${product.quantity}</span>
+                        <button class="productButton" onclick="addToCartAndNavigate('${product.name}')">Add to Cart</button>
+                    `;
+                    productList.appendChild(listItem);
+                });
+            } else {
+                console.error('Failed to fetch search results');
+            }
+        } catch (error) {
+            console.error('Error during search:', error);
+        }
+    }
+</script>
+
+         </div>
+    </div>
+
+    <footer>
+        &copy; 2024 E-Commerce Store
+    </footer>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Products</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: cyan;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        #productList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .productItem {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            transition: transform 0.2s;
+        }
+
+        .productItem:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .productItem span {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .productButton {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .productButton:hover {
+            background-color: #45a049;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Our Products</h2>
+        <ul id="productList"></ul>
+    </div> 
+
+   <script>
+async function authenticateUser(username, password) {
+    try {
+        const response = await fetch('/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `grant_type=password&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
+        });
+        console.log('Username:', username);
+            console.log('Password:', password);
+
+        if (response.ok) {
+            const data = await response.json();
+            const authToken = data.access_token;
+            localStorage.setItem('authToken', authToken);
+            console.log('Response data:', data);
+            return authToken;
+        } else {
+            const errorData = await response.json();
+            console.error('Authentication Error:', errorData.detail);
+            throw new Error('Authentication failed');
+        }
+    } catch (error) {
+        console.error('Error during authentication:', error);
+        throw error;
+    }
+}
+
+async function addToCartAndNavigate(product_name) {
+    const quantity = 1;
+
+    try {
+        const authToken = localStorage.getItem('authToken');
+
+        const response = await fetch(`/cart/add/${product_name}?quantity=${quantity}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+        alert('Order placed cart successfully');
+            // window.location.href = '/cartview';
+        } else {
+            const errorData = await response.json();
+            alert(`Error: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+async function displayProducts() {
+    try {
+        const response = await fetch('/products/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const products = await response.json();
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '';
+            products.forEach(product => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('productItem');
+                listItem.innerHTML = `
+                    <span><strong>Name:</strong> ${product.product_data.name}</span>
+                    <span><strong>Description:</strong> ${product.product_data.description}</span>
+                    <span><strong>Price:</strong> ${product.product_data.price}</span>
+                    <span><strong>Quantity:</strong> ${product.product_data.quantity}</span>
+                    <button class="productButton" onclick="addToCartAndNavigate('${product.product_data.name}')">Add to Cart</button>
+                `;
+                productList.appendChild(listItem);
+            });
+        } else {
+            console.error('Failed to fetch products');
+        }
+    } catch (error) {
+        console.error('Error fetching products:', error);
+    }
+}
+displayProducts();
+    </script> 
+
+</body>
+</html> 
+
+ 

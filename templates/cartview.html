@@ -1,0 +1,544 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: cyan;
+      margin: 0;
+      padding: 0;
+    }
+
+    #cart-container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #cart-items {
+      list-style: none;
+      padding: 0;
+    }
+
+    .cart-item {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-details {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+
+    .remove-button {
+      padding: 10px;
+      background-color: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .remove-button:hover {
+      background-color: #d32f2f;
+    }
+
+    .order-all-button {
+      padding: 10px;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .order-all-button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cart-container">
+    <h1>Shopping Cart</h1>
+    <ul id="cart-items"></ul>
+    <button class="order-all-button" onclick="placeOrderForAll()">Order All</button>
+    <div id="order-details"></div>
+    <div id="order-details">
+      <h2>Order Details</h2>
+      <p>Total Price: <span id="total-price"></span></p>
+      <p>Extra Charge: <span id="extra-charge"></span></p>
+      <p>Total Price with Charge: <span id="total-price-with-charge"></span></p>
+    </div>
+  </div>
+
+  <script>
+    const apiUrl = 'http://127.0.0.1:8000';
+    const authToken = localStorage.getItem('authToken');
+
+    if (!authToken) {
+      window.location.href = '/login';
+    }
+
+    function fetchCart(authToken) {
+      fetch(`${apiUrl}/cart/view`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch shopping cart');
+          }
+          return response.json();
+        })
+        .then(cartData => {
+          console.log('Shopping Cart Data:', cartData);
+          displayCart(cartData, authToken);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+function displayCart(cartData) {
+    const cartItemsContainer = document.getElementById('cart-items');
+    cartItemsContainer.innerHTML = '';
+
+    if (cartData && cartData.products) {
+      const products = cartData.products;
+
+      if (Object.keys(products).length > 0) {
+        for (const [productName, productDetails] of Object.entries(products)) {
+          const listItem = document.createElement('li');
+          listItem.className = 'cart-item';
+
+          const productDetailsContainer = document.createElement('div');
+          productDetailsContainer.className = 'product-details';
+
+          const productText = `Product: ${productName}, Quantity: ${productDetails.quantity}, Description: ${productDetails.details.description}, Price: ${productDetails.details.price}`;
+          productDetailsContainer.textContent = productText;
+
+          listItem.appendChild(productDetailsContainer);
+
+          const removeButton = document.createElement('button');
+          removeButton.className = 'remove-button';
+          removeButton.textContent = 'Remove';
+          removeButton.addEventListener('click', () => removeProduct(productName, authToken));
+          listItem.appendChild(removeButton);
+
+          cartItemsContainer.appendChild(listItem);
+        }
+      } else {
+        const listItem = document.createElement('li');
+        listItem.textContent = 'Cart is empty.';
+        cartItemsContainer.appendChild(listItem);
+      }
+    } else {
+      console.error('Invalid cart data format');
+    }
+  }function placeOrderForAll() {
+    fetch(`${apiUrl}/place-order/all`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to place order for all products');
+        }
+        return response.json();
+      })
+      .then(orderData => {
+        displayOrderDetails(orderData);
+        fetchCart(authToken); 
+        alert('Order placed successfully for all products');
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  function displayOrderDetails(orderData) {
+   const totalPriceElement = document.getElementById('total-price');
+   const extraChargeElement = document.getElementById('extra-charge');
+   const totalPriceWithChargeElement = document.getElementById('total-price-with-charge');
+
+   totalPriceElement.textContent = `$${orderData.total_amount.toFixed(2)}`;
+   extraChargeElement.textContent = `$5.00`;
+   totalPriceWithChargeElement.textContent = `${(orderData.total_amount + 5.00).toFixed(2)}`;
+ }
+
+
+ function fetchCart(authToken) {
+  fetch(`${apiUrl}/cart/view`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch shopping cart');
+      }
+      return response.json();
+    })
+    .then(cartData => {
+      console.log('Shopping Cart Data:', cartData);
+      displayCart(cartData);
+      displayOrderDetailsBeforeOrder(cartData);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function displayOrderDetailsBeforeOrder(cartData) {
+  const totalPriceElement = document.getElementById('total-price');
+  const extraChargeElement = document.getElementById('extra-charge');
+  const totalPriceWithChargeElement = document.getElementById('total-price-with-charge');
+
+  const totalAmount = calculateTotalAmount(cartData);
+  const extraCharge = 5.00; // Change this value based on your logic for extra charge
+
+  totalPriceElement.textContent = `$${totalAmount.toFixed(2)}`;
+  extraChargeElement.textContent = `$${extraCharge.toFixed(2)}`;
+  totalPriceWithChargeElement.textContent = `$${(totalAmount + extraCharge).toFixed(2)}`;
+}
+
+function calculateTotalAmount(cartData) {
+  const products = cartData.products;
+  let totalAmount = 0;
+
+  for (const [productName, productDetails] of Object.entries(products)) {
+    totalAmount += productDetails.details.price * productDetails.quantity;
+  }
+
+  return totalAmount;
+}
+
+if (authToken) {
+  fetchCart(authToken);
+}
+
+
+  function removeProduct(productName, authToken) {
+    fetch(`${apiUrl}/cart/remove/${productName}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to remove product from cart');
+        }
+        fetchCart(authToken);
+      })
+      .catch(error => console.error('Error:', error));
+  }
+    if (authToken) {
+      fetchCart(authToken);
+    }
+  </script>
+</body>
+</html>
+ -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: cyan;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #cart-container {
+      max-width: 600px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #cart-items {
+      list-style: none;
+      padding: 0;
+    }
+
+    .cart-item {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-details {
+      flex-grow: 1;
+      margin-right: 10px;
+    }
+
+    .remove-button {
+      padding: 10px;
+      background-color: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .remove-button:hover {
+      background-color: #d32f2f;
+    }
+
+    .order-all-button {
+      padding: 10px;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .order-all-button:hover {
+      background-color: #45a049;
+    }
+
+    #order-details {
+      margin-top: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="cart-container">
+    <h1>Shopping Cart</h1>
+    <ul id="cart-items"></ul>
+    <button class="order-all-button" onclick="placeOrderForAll()">Order All</button>
+    <div id="order-details">
+      <h2>Order Details</h2>
+      <p>Total Price: <span id="total-price"></span></p>
+      <p>GST: <span id="extra-charge"></span></p>
+      <p>Total Price with Charge: <span id="total-price-with-charge"></span></p>
+    </div>
+  </div>
+
+  <script>
+    const apiUrl = 'http://127.0.0.1:8000';
+    const authToken = localStorage.getItem('authToken');
+
+    if (!authToken) {
+      window.location.href = '/login';
+    }
+
+    function fetchCart(authToken) {
+      fetch(`${apiUrl}/cart/view`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch shopping cart');
+          }
+          return response.json();
+        })
+        .then(cartData => {
+          console.log('Shopping Cart Data:', cartData);
+          displayCart(cartData, authToken);
+          displayOrderDetailsBeforeOrder(cartData);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function displayCart(cartData) {
+      const cartItemsContainer = document.getElementById('cart-items');
+      cartItemsContainer.innerHTML = '';
+
+      if (cartData && cartData.products) {
+        const products = cartData.products;
+
+        if (Object.keys(products).length > 0) {
+          for (const [productName, productDetails] of Object.entries(products)) {
+            const listItem = document.createElement('li');
+            listItem.className = 'cart-item';
+
+            const productDetailsContainer = document.createElement('div');
+            productDetailsContainer.className = 'product-details';
+
+            const productText = `Product: ${productName}, Quantity: ${productDetails.quantity}, Description: ${productDetails.details.description}, Price: ${productDetails.details.price}`;
+            productDetailsContainer.textContent = productText;
+
+            listItem.appendChild(productDetailsContainer);
+
+            const removeButton = document.createElement('button');
+            removeButton.className = 'remove-button';
+            removeButton.textContent = 'Remove';
+            removeButton.addEventListener('click', () => removeProduct(productName, authToken));
+            listItem.appendChild(removeButton);
+
+            cartItemsContainer.appendChild(listItem);
+          }
+        } else {
+          const listItem = document.createElement('li');
+          listItem.textContent = 'Cart is empty.';
+          cartItemsContainer.appendChild(listItem);
+        }
+      } else {
+        console.error('Invalid cart data format');
+      }
+    }
+
+    function placeOrderForAll() {
+      fetch(`${apiUrl}/place-order/all`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to place order for all products');
+          }
+          return response.json();
+        })
+        .then(orderData => {
+          displayOrderDetails(orderData);
+          fetchCart(authToken); 
+          alert('Order placed successfully for all products');
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function displayOrderDetails(orderData) {
+      const totalPriceElement = document.getElementById('total-price');
+      const extraChargeElement = document.getElementById('extra-charge');
+      const totalPriceWithChargeElement = document.getElementById('total-price-with-charge');
+
+      totalPriceElement.textContent = `${orderData.total_amount.toFixed(2)}`;
+      extraChargeElement.textContent = ``;
+      totalPriceWithChargeElement.textContent = `${(orderData.total_amount + 5.00).toFixed(2)}`;
+    }
+
+    function displayOrderDetailsBeforeOrder(cartData) {
+      const totalPriceElement = document.getElementById('total-price');
+      const extraChargeElement = document.getElementById('extra-charge');
+      const totalPriceWithChargeElement = document.getElementById('total-price-with-charge');
+
+      const totalAmount = calculateTotalAmount(cartData);
+      const extraCharge = 18; 
+
+      totalPriceElement.textContent = `${totalAmount.toFixed(2)}`;
+      extraChargeElement.textContent = `${extraCharge.toFixed(2)}`;
+      totalPriceWithChargeElement.textContent = `${(totalAmount + extraCharge).toFixed(2)}`;
+    }
+
+    function calculateTotalAmount(cartData) {
+      const products = cartData.products;
+      let totalAmount = 0;
+
+      for (const [productName, productDetails] of Object.entries(products)) {
+        totalAmount += productDetails.details.price * productDetails.quantity;
+      }
+
+      return totalAmount;
+    }
+
+    function removeProduct(productName, authToken) {
+      fetch(`${apiUrl}/cart/remove/${productName}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to remove product from cart');
+          }
+          fetchCart(authToken);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    if (authToken) {
+      fetchCart(authToken);
+    }
+  </script>
+</body>
+</html>
+
